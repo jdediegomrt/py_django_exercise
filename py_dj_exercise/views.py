@@ -1,10 +1,31 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+import logging
+import requests
 
-# Create your views here.
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseServerError
+from django.views.decorators.http import require_GET, require_safe
+
+# @require_safe
+# Web servers should automatically strip the content of responses to HEAD requests while leaving the headers unchanged,
+# so you may handle HEAD requests exactly like GET requests in your views. Since some software, such as link checkers,
+# rely on HEAD requests, you might prefer using require_safe instead of require_GET
 
 
-def index(request):
-    domain = request.GET.get('dominio')
+@require_GET
+def root(request):
+    try:
+        domain = request.GET.get('dominio')
+        if not domain:
+            return HttpResponseBadRequest('Missing required parameter: domain')
 
-    return HttpResponse("Your domain: " + ('' if domain is None else domain) + "\nHello, world.")
+        domain_request = requests.get('http://' + domain)
+        logging.warning('domain_request TIME: ' + str(domain_request.elapsed.microseconds))
+
+        return JsonResponse(
+            {
+                'status': domain_request.status_code,
+                'time': str(int(domain_request.elapsed.microseconds / 1000)) + 'ms'
+            })
+
+    except Exception as e:
+        logging.error('Error at %s', 'division', exc_info=e)
+        return HttpResponseServerError(e)
