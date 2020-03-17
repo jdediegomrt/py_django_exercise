@@ -15,10 +15,38 @@ def root(request):
     try:
         domain = request.GET.get('dominio')
         if not domain:
-            return HttpResponseBadRequest('Missing required parameter: domain')
+            return HttpResponseBadRequest('Missing required parameter: dominio')
 
-        domain_request = requests.get('http://' + domain)
+        custom_ip = request.GET.get('ip')
+        try:
+            if custom_ip:
+                custom_ip_port = request.GET.get('port')
+                if custom_ip_port:
+                    proxy = dict(
+                            http='http://' + custom_ip + ':' + custom_ip_port,
+                            https='https://' + custom_ip + ':' + custom_ip_port)
+                else:
+                    # assuming server hasn't port forwarding
+                    proxy = dict(
+                            http='http://' + custom_ip,
+                            https='https://' + custom_ip)
+
+                domain_request = requests.get(
+                    'http://' + domain,
+                    proxies=proxy)
+            else:
+                domain_request = requests.get('http://' + domain)
+        except Exception as ex:
+            logging.error('ERROR --> ', exc_info=ex)
+            return JsonResponse(
+                {
+                    'status': 500,
+                    'exception': str(ex)
+                })
+
         logging.warning('domain_request TIME: ' + str(domain_request.elapsed.microseconds))
+        logging.warning('domain_request CONTENT: ' + str(domain_request.content))
+        logging.warning('domain_request URL: ' + str(domain_request.url))
 
         return JsonResponse(
             {
@@ -26,6 +54,6 @@ def root(request):
                 'time': str(int(domain_request.elapsed.microseconds / 1000)) + 'ms'
             })
 
-    except Exception as e:
-        logging.error('Error at %s', 'division', exc_info=e)
-        return HttpResponseServerError(e)
+    except Exception as ex:
+        logging.error('ERROR --> ', exc_info=ex)
+        return HttpResponseServerError(ex)
