@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "7c52e444-85e8-4fd2-8275-2440c3bc2d5e",
+		"name": "py-dj-exercise",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "make_a_request",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{HOST}}:{{PORT}}/?dominio=www.transparentcdn.com&ip=192.168.1.70",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						""
+					],
+					"query": [
+						{
+							"key": "dominio",
+							"value": "www.transparentcdn.com"
+						},
+						{
+							"key": "ip",
+							"value": "192.168.1.70"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
